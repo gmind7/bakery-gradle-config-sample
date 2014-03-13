@@ -1,0 +1,15 @@
+configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('application') }) {
+			
+	description = "[application]"
+
+	apply plugin: 'spring-boot'
+	
+	dependencies {
+	  // Spring Boot
+	  compile("org.springframework.boot:spring-boot-starter:$springBootVersion") { force = true }
+
+	  // Testing
+	  testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion") { force = true }
+	}
+	
+}

@@ -1,0 +1,84 @@
+configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war') }) {
+	
+	description = "[Web] Tomcat Web Service"
+
+	apply plugin: "tomcat"
+	apply plugin: "cargo"
+	
+	cargo {
+	  containerId = 'tomcat7x'
+	  port = 8080
+	  deployable {
+	    file = file("$buildDir/libs/${project.name}-${version}.war")
+	    context = "/"
+	  }
+	  local {
+	    installer {
+		  installUrl = "http://apache.mirror.cdnetworks.com/tomcat/tomcat-7/v7.0.50/bin/apache-tomcat-7.0.50.zip"
+		  downloadDir = file("$buildDir/download")
+		  extractDir = file("$buildDir/extract")
+	    }
+	  }
+	  remote {
+		hostname = 'localhost'
+		username = 'user'
+		password = 'pass'
+	  }
+    }
+	  
+    [tomcatRun, tomcatRunWar]*.httpPort = 8080
+    [tomcatRun, tomcatRunWar]*.contextPath = "/"
+  	  
+	eclipse {
+	  wtp {
+		component {
+		  contextPath = "/"
+		}
+		facet {
+		  facet name: 'jst.web', version: '3.0'
+		  facet name: 'jst.java', version: '1.7'
+		}
+	  }
+	}
+	
+	dependencies {
+	  //Spring Web
+	  compile("org.springframework:spring-webmvc:$springVersion") { force = true }
+
+	  //Spring Etc
+	  compile("org.springframework.hateoas:spring-hateoas:$springHateoasVersion") { force = true }
+	  compile("org.springframework.data:spring-data-rest-core:$springDataRestVersion") { force = true }
+	  compile("org.springframework.plugin:spring-plugin-core:$springPluginVersion") { force = true }
+	  compile("org.springframework.hateoas:spring-hateoas:$springHateoasVersion") { force = true }
+	  
+	  // Thymeleaf
+	  compile "org.thymeleaf:thymeleaf:$thymeleafVersion"
+	  compile "org.thymeleaf:thymeleaf-spring4:$thymeleafVersion"
+	  compile "org.thymeleaf.extras:thymeleaf-extras-springsecurity3:$thymeleafExtrasSpringsecurity3"
+	  compile "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:$thymeleafLayoutDialectVersion"
+	  
+	  // Servlet
+	  provided "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
+	  provided "javax.websocket:javax.websocket-api:$javaxWebSocketVersion"
+	  provided "javax.servlet:jsp-api:$javaxServletJspApiVersion"
+	  provided "org.apache.tomcat:tomcat-servlet-api:$tomcatVersion"
+	  
+	  // Tomcat
+	  tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+	  tomcat "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
+	  tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion") {
+		exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+	  }
+	  
+	  // Cargo
+	  cargo "org.codehaus.cargo:cargo-core-uberjar:$cargoVersion"
+	  cargo "org.codehaus.cargo:cargo-ant:$cargoVersion"
+	  cargo files("${gradleScriptDir}/library/commons-logging-1.1.3.jar")
+
+	  // Testing
+	  testCompile("org.springframework:spring-test-mvc:$springTestMvcVersion") { force = true }
+	  //crosstest project(':bakery-foundation-web-javaconfig').sourceSets.test.output
+	  
+	}
+	
+}
