@@ -4,6 +4,13 @@ configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war'
 
 	apply plugin: "tomcat"
 	apply plugin: "cargo"
+
+	processResources.dependsOn copySharedResources
+	
+	war.doLast{
+		println "####### war unzip name : [$project.name], version : [$project.version], destPath : [$buildDir/exploded]  #######"
+		ant.unzip(src: war.archivePath, dest: "$buildDir/exploded")
+	}
 	
 	cargo {
 	  containerId = 'tomcat7x'
@@ -28,7 +35,8 @@ configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war'
 	  
     [tomcatRun, tomcatRunWar]*.httpPort = 8080
     [tomcatRun, tomcatRunWar]*.contextPath = "/"
-  	  
+  
+	  
 	eclipse {
 	  wtp {
 		component {
@@ -44,12 +52,13 @@ configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war'
 	dependencies {
 	  //Spring Web
 	  compile("org.springframework:spring-webmvc:$springVersion") { force = true }
+	  compile("org.springframework:spring-websocket:$springVersion") { force = true }
+	  compile("org.springframework:spring-messaging:$springVersion") { force = true }
 
 	  //Spring Etc
 	  compile("org.springframework.hateoas:spring-hateoas:$springHateoasVersion") { force = true }
 	  compile("org.springframework.data:spring-data-rest-core:$springDataRestVersion") { force = true }
 	  compile("org.springframework.plugin:spring-plugin-core:$springPluginVersion") { force = true }
-	  compile("org.springframework.hateoas:spring-hateoas:$springHateoasVersion") { force = true }
 	  
 	  // Thymeleaf
 	  compile "org.thymeleaf:thymeleaf:$thymeleafVersion"
@@ -58,15 +67,14 @@ configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war'
 	  compile "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:$thymeleafLayoutDialectVersion"
 	  
 	  // Servlet
-	  provided "javax.servlet:javax.servlet-api:$javaxServletApiVersion"
-	  provided "javax.websocket:javax.websocket-api:$javaxWebSocketVersion"
-	  provided "javax.servlet:jsp-api:$javaxServletJspApiVersion"
-	  provided "org.apache.tomcat:tomcat-servlet-api:$tomcatVersion"
+	  providedCompile "org.apache.tomcat:tomcat-servlet-api:$apacheTomcatVersion"
+	  providedCompile "org.apache.tomcat:tomcat-jsp-api:$apacheTomcatVersion"
+	  //providedCompile "org.apache.tomcat:tomcat-websocket-api:$apacheTomcatVersion"
 	  
 	  // Tomcat
-	  tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
-	  tomcat "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
-	  tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion") {
+	  tomcat "org.apache.tomcat.embed:tomcat-embed-core:$apacheTomcatVersion"
+	  tomcat "org.apache.tomcat.embed:tomcat-embed-logging-juli:$apacheTomcatVersion"
+	  tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:$apacheTomcatVersion") {
 		exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
 	  }
 	  
@@ -77,7 +85,6 @@ configure(subprojects.findAll { subproject -> subproject.plugins.hasPlugin('war'
 
 	  // Testing
 	  testCompile("org.springframework:spring-test-mvc:$springTestMvcVersion") { force = true }
-	  //crosstest project(':bakery-foundation-web-javaconfig').sourceSets.test.output
 	  
 	}
 	
