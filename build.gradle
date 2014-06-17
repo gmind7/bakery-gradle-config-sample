@@ -186,6 +186,21 @@ configure(subprojects) { subproject ->
     }
 }
 /*
+
+project("shared"){
+	
+    description = "[shared] Project Shared Files"
+    
+    jar { 
+        exclude(['**/*.properties','**/*.xml']) 
+    } 
+    
+    dependencies {
+	  
+    }
+    
+}
+
 project("application"){
     
 	description = "[application] --------------"
